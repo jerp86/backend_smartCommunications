@@ -10,8 +10,6 @@ class User extends Model {
         email: Sequelize.STRING,
         password: Sequelize.VIRTUAL,
         password_hash: Sequelize.STRING,
-        patient: Sequelize.BOOLEAN,
-        responsible: Sequelize.BOOLEAN,
       },
       {
         sequelize,
