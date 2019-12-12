@@ -16,11 +16,11 @@ class Employees extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.File, { foreignKey: 'avatar_id', as: 'avatar' });
     this.belongsTo(models.Department, {
       foreignKey: 'department_id',
-      as: 'department',
+      as: 'employees_department',
     });
+    this.belongsTo(models.File, { foreignKey: 'avatar_id', as: 'avatar' });
   }
 }
 
