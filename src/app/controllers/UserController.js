@@ -103,6 +103,10 @@ class UserController {
 
     const users = await User.findByPk(id);
 
+    if (!users) {
+      return res.status(400).json({ error: 'Users does not exists' });
+    }
+
     return res.json(users);
   }
 }

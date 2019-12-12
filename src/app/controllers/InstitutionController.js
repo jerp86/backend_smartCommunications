@@ -1,13 +1,13 @@
 import * as Yup from 'yup';
 
-import Employees from '../models/Employees';
 import User from '../models/User';
+import Institution from '../models/Institution';
 
-class EmployeeController {
+class InstitutionController {
   async index(req, res) {
-    const employees = await Employees.findAll();
+    const institution = await Institution.findAll();
 
-    return res.json(employees);
+    return res.json(institution);
   }
 
   async show(req, res) {
@@ -23,12 +23,16 @@ class EmployeeController {
     }
 
     const { id } = req.params;
-    const employees = await Employees.findByPk(id);
+    const institution = await Institution.findByPk(id);
 
-    if (!employees)
+    /**
+     * Check if institution already exists
+     */
+    if (!institution) {
       return res.status(400).json({ error: 'Employee does not exists' });
+    }
 
-    return res.json(employees);
+    return res.json(institution);
   }
 
   async store(req, res) {
@@ -37,10 +41,10 @@ class EmployeeController {
      */
     const schema = Yup.object().shape({
       name: Yup.string()
-        .max(50)
-        .required(),
-      function: Yup.string()
         .max(45)
+        .required(),
+      description: Yup.string()
+        .max(200)
         .required(),
     });
 
@@ -61,20 +65,18 @@ class EmployeeController {
         .json({ error: 'You can only create a record as an admin.' });
     }
 
-    /**
-     * Check if employee already exists
-     */
-    let employee = await Employees.findOne({
-      where: { name: req.body.name },
-    });
+    const { name, description } = req.body;
 
-    if (!employee) {
-      employee = await Employees.create(req.body);
+    let institution = await Institution.findOne({ where: { name } });
+
+    /**
+     * Check if institution already exists
+     */
+    if (!institution) {
+      institution = await Institution.create({ name, description });
     }
 
-    const { id, name } = employee;
-
-    return res.json({ id, name, function: employee.function });
+    return res.json(institution);
   }
 
   async update(req, res) {
@@ -83,8 +85,8 @@ class EmployeeController {
      */
     const schema = Yup.object().shape({
       id: Yup.integer().required(),
-      name: Yup.string().max(50),
-      function: Yup.string().max(45),
+      name: Yup.string().max(45),
+      description: Yup.string().max(200),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -92,46 +94,44 @@ class EmployeeController {
     }
 
     /**
-     * If 'id' is different from 'userId', make sure 'userId' is an admin
+     * Check if userId is a provider
      */
-    if (req.userId !== req.body.id) {
-      const isProvider = await User.findOne({
-        where: { id: req.userId, provider: true },
-      });
+    const isProvider = await User.findOne({
+      where: { id: req.userId, provider: true },
+    });
 
-      if (!isProvider) {
-        return res
-          .status(401)
-          .json({ error: 'You can only create a record as an admin.' });
-      }
+    if (!isProvider) {
+      return res
+        .status(401)
+        .json({ error: 'You can only create one institution as an admin' });
     }
 
     const { id, name } = req.body;
 
-    const employee = await Employees.findByPk(id);
+    const institution = await Institution.findByPk(id);
 
     /**
-     * Check if employee already exists
+     * Check if institution already exists
      */
-    if (!employees) {
+    if (!institution) {
       return res.status(400).json({ error: 'Employee does not exists' });
     }
 
     /**
      * Verify new name already exists
      */
-    if (name !== employee.name) {
-      const employeeExists = await Employees.findOne({ where: { name } });
+    if (name !== institution.name) {
+      const institutionExists = await Institution.findOne({ where: { name } });
 
-      if (employeeExists) {
-        return res.status(400).json({ error: 'Employee already exists.' });
+      if (institutionExists) {
+        return res.status(400).json({ error: 'Institution already exists.' });
       }
     }
 
-    await employee.update(req.body);
+    const { description } = await institution.update(req.body);
 
-    return res.json({ id, name, function: employee.function });
+    return res.json({ id, name, description });
   }
 }
 
-export default new EmployeeController();
+export default new InstitutionController();
