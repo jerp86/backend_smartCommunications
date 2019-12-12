@@ -18,6 +18,8 @@ routes.post('/sessions', SessionController.store);
 routes.use(authMiddleware);
 
 routes.put('/users', UserController.update);
+routes.get('/users', UserController.index);
+routes.get('/users/:id', UserController.show);
 
 routes.get('/providers', ProviderController.index);
 

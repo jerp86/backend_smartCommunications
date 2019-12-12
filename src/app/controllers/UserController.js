@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { Op } from 'sequelize';
 
 import User from '../models/User';
 
@@ -13,6 +14,7 @@ class UserController {
       email: Yup.string()
         .email()
         .required(),
+      provider: Yup.boolean(),
       password: Yup.string()
         .min(6)
         .max(12)
@@ -85,6 +87,24 @@ class UserController {
       phone,
       email,
     });
+  }
+
+  async index(req, res) {
+    const users = await User.findAll({
+      where: {
+        provider: false,
+      },
+    });
+
+    return res.json(users);
+  }
+
+  async show(req, res) {
+    const { id } = req.params;
+
+    const users = await User.findByPk(id);
+
+    return res.json(users);
   }
 }
 
