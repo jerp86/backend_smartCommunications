@@ -8,6 +8,7 @@ import SessionController from './app/controllers/SessionController';
 import authMiddleware from './app/middleware/auth';
 import FileController from './app/controllers/FileController';
 import ProviderController from './app/controllers/ProviderController';
+import EmployeeController from './app/controllers/EmployeeController';
 
 const routes = new Router();
 const upload = multer(multerConfig);
@@ -22,6 +23,11 @@ routes.get('/users', UserController.index);
 routes.get('/users/:id', UserController.show);
 
 routes.get('/providers', ProviderController.index);
+
+routes.get('/employees', EmployeeController.index);
+routes.get('/employees/:id', EmployeeController.show);
+routes.post('/employees', EmployeeController.store);
+routes.post('/employees', EmployeeController.update);
 
 routes.post('/files', upload.single('file'), FileController.store);
 
