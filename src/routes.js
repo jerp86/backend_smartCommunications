@@ -10,12 +10,17 @@ import FileController from './app/controllers/FileController';
 import ProviderController from './app/controllers/ProviderController';
 import EmployeeController from './app/controllers/EmployeeController';
 import InstitutionController from './app/controllers/InstitutionController';
+import TotalVoiceController from './app/controllers/TotalVoiceController';
 
 const routes = new Router();
 const upload = multer(multerConfig);
 
 routes.post('/users', UserController.store);
 routes.post('/sessions', SessionController.store);
+
+routes.post('/totalvoice/sms', TotalVoiceController.sms);
+routes.post('/totalvoice/tts', TotalVoiceController.tts);
+routes.post('/totalvoice/chamada', TotalVoiceController.chamada);
 
 routes.use(authMiddleware);
 
