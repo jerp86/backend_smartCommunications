@@ -38,22 +38,58 @@ class TotalVoiceController {
   }
 
   async tts(req, res) {
-    const { numero_destino, mensagem, velocidade, tipo_voz } = req.body;
+    /**
+     * Validating input data
+     */
+    const schema = Yup.object().shape({
+      numero_destino: Yup.string()
+        .min(10)
+        .max(11)
+        .required(),
+      mensagem: Yup.string()
+        .max(160)
+        .required(),
+      velocidade: Yup.number()
+        .min(-10)
+        .max(10)
+        .default(1),
+      resposta_usuario: Yup.boolean().default(false),
+      tipo_voz: Yup.string().default('br-Vitoria'),
+      gravar_audio: Yup.boolean().default(false),
+      detecta_caixa: Yup.boolean().default(true),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation fails' });
+    }
+
+    const {
+      numero_destino,
+      mensagem,
+      velocidade,
+      resposta_usuario,
+      tipo_voz,
+      gravar_audio,
+      detecta_caixa,
+    } = req.body;
 
     const opcoes = {
-      velocidade: velocidade || 1,
-      tipo_voz: tipo_voz || 'br-Vitoria',
+      velocidade,
+      resposta_usuario,
+      tipo_voz,
+      gravar_audio,
+      detecta_caixa,
     };
 
     client.tts
       .enviar(numero_destino, mensagem, opcoes)
-      .then(function(data) {
-        console.log(data);
+      .then(data => {
         return res.status(data.status).json(data);
       })
-      .catch(function(error) {
-        console.log('Erro: ', error);
-        return res.status(error.status).json(error);
+      .catch(error => {
+        return res
+          .status(error.data.status)
+          .json({ message: error.data.mensagem });
       });
   }
 
