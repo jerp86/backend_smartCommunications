@@ -15,7 +15,7 @@ class InstitutionController {
      * Validating input data
      */
     const schema = Yup.object().shape({
-      id: Yup.integer().required(),
+      id: Yup.number().required(),
     });
 
     if (!(await schema.isValid(req.params))) {
@@ -84,7 +84,7 @@ class InstitutionController {
      * Validating input data
      */
     const schema = Yup.object().shape({
-      id: Yup.integer().required(),
+      id: Yup.number().required(),
       name: Yup.string().max(45),
       description: Yup.string().max(200),
     });
