@@ -9,7 +9,7 @@ class TotalVoiceController {
      * Validating input data
      */
     const schema = Yup.object().shape({
-      numero_destino: Yup.string()
+      numero_destino: Yup.number()
         .max(11)
         .required(),
       mensagem: Yup.string()
@@ -42,7 +42,7 @@ class TotalVoiceController {
      * Validating input data
      */
     const schema = Yup.object().shape({
-      numero_destino: Yup.string()
+      numero_destino: Yup.number()
         .min(10)
         .max(11)
         .required(),
@@ -94,17 +94,50 @@ class TotalVoiceController {
   }
 
   async chamada(req, res) {
-    const { numero_origem, numero_destino } = req.body;
+    /**
+     * Validating input data
+     */
+    const schema = Yup.object().shape({
+      numero_origem: Yup.number()
+        .min(10)
+        .max(11)
+        .required(),
+      numero_destino: Yup.number()
+        .min(10)
+        .max(11)
+        .required(),
+      data_criacao: Yup.date().default(new Date()),
+      gravar_audio: Yup.boolean().default(false),
+      tags: Yup.string().default(''),
+      bina_origem: Yup.number().when('numero_origem', (numero_origem, field) =>
+        numero_origem
+          ? field.required().oneOf([Yup.ref('numero_origem')])
+          : field
+      ),
+      bina_destino: Yup.number().when(
+        'numero_destino',
+        (numero_destino, field) =>
+          numero_destino
+            ? field.required().oneOf([Yup.ref('numero_destino')])
+            : field
+      ),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation fails' });
+    }
+
+    const { numero_origem, numero_destino, ...options } = req.body;
 
     client.chamada
-      .ligar(numero_origem, numero_destino)
-      .then(function(data) {
-        console.log(data);
+      .ligar(numero_origem, numero_destino, options)
+      .then(data => {
         return res.status(data.status).json(data);
       })
-      .catch(function(error) {
-        console.error('Erro: ', error);
-        return res.status(error.status).json(error);
+      .catch(error => {
+        return res
+          .status(error.data.status)
+          .json({ message: error.data.mensagem });
       });
   }
 }
